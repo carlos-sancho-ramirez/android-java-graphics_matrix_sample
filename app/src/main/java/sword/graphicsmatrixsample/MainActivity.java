@@ -1,6 +1,7 @@
 package sword.graphicsmatrixsample;
 
 import android.app.Activity;
+import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.view.View;
@@ -13,11 +14,43 @@ public class MainActivity extends Activity implements View.OnClickListener {
     private Matrix _normalMatrix;
     private Matrix _zoomInMatrix;
 
-    private void initMatrixes() {
-        _normalMatrix = new Matrix();
+    private static final class Size {
+        final int width;
+        final int height;
 
-        _zoomInMatrix = new Matrix();
-        _zoomInMatrix.setScale(4.0f, 4.0f);
+        Size(int width, int height) {
+            this.width = width;
+            this.height = height;
+        }
+    }
+
+    private Size getBitmapSize() {
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+
+        BitmapFactory.decodeResource(getResources(), R.drawable.sample_image, options);
+        return new Size(options.outWidth, options.outHeight);
+    }
+
+    private Size getImageFrameSize() {
+        return new Size(_imageView.getWidth(), _imageView.getHeight());
+    }
+
+    private void initMatrixes() {
+        if (_normalMatrix == null) {
+            final Size frameSize = getImageFrameSize();
+            final Size bitmapSize = getBitmapSize();
+
+            final float fitXScale = ((float) frameSize.width) / bitmapSize.width;
+            final float fitYScale = ((float) frameSize.height) / bitmapSize.height;
+            final float fitScale = Math.min(fitXScale, fitYScale);
+
+            _normalMatrix = new Matrix();
+            _normalMatrix.setScale(fitScale, fitScale);
+
+            _zoomInMatrix = new Matrix();
+            _zoomInMatrix.setScale(fitScale * 3.0f, fitScale * 3.0f);
+        }
     }
 
     @Override
@@ -26,15 +59,13 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.main_activity);
 
         _imageView = findViewById(R.id.imageView);
-
-        initMatrixes();
-
         findViewById(R.id.btnNormal).setOnClickListener(this);
         findViewById(R.id.btnZoomIn).setOnClickListener(this);
     }
 
     @Override
     public void onClick(View view) {
+        initMatrixes();
         final Matrix matrix;
         switch (view.getId()) {
             case R.id.btnZoomIn:
