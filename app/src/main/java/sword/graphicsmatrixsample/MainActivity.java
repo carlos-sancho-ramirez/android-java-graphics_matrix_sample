@@ -45,8 +45,12 @@ public class MainActivity extends Activity implements View.OnClickListener {
             final float fitYScale = ((float) frameSize.height) / bitmapSize.height;
             final float fitScale = Math.min(fitXScale, fitYScale);
 
+            final float marginX = (frameSize.width - bitmapSize.width * fitScale) / 2;
+            final float marginY = (frameSize.height - bitmapSize.height * fitScale) / 2;
+
             _normalMatrix = new Matrix();
             _normalMatrix.setScale(fitScale, fitScale);
+            _normalMatrix.postTranslate(marginX, marginY);
 
             _zoomInMatrix = new Matrix();
             _zoomInMatrix.setScale(fitScale * 3.0f, fitScale * 3.0f);
