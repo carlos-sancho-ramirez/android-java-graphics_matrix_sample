@@ -4,26 +4,70 @@ import android.app.Activity;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
+import android.util.SparseArray;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.TextView;
 
-public class MainActivity extends Activity implements View.OnClickListener {
+import sword.graphicsmatrixsample.matrix_composer.HorizontalFlip;
+import sword.graphicsmatrixsample.matrix_composer.Normal;
+import sword.graphicsmatrixsample.matrix_composer.VerticalFlip;
+import sword.graphicsmatrixsample.matrix_composer.Zoom3x;
+
+public final class MainActivity extends Activity implements AdapterView.OnItemSelectedListener {
+
+    private interface Options {
+        int NORMAL = 0;
+        int ZOOM_3X = 1;
+        int FLIP_HORIZONTAL = 2;
+        int FLIP_VERTICAL = 3;
+    }
 
     private ImageView _imageView;
 
-    private Matrix _normalMatrix;
-    private Matrix _zoomInMatrix;
-    private Matrix _horizontalMirrorMatrix;
-    private Matrix _verticalMirrorMatrix;
+    private static final class Option {
+        final int text;
+        final MatrixComposer composer;
 
-    private static final class Size {
-        final int width;
-        final int height;
+        private Matrix _matrix;
 
-        Size(int width, int height) {
-            this.width = width;
-            this.height = height;
+        public Option(int text, MatrixComposer composer) {
+            if (composer == null) {
+                throw new IllegalArgumentException();
+            }
+
+            this.text = text;
+            this.composer = composer;
         }
+
+        public Matrix getMatrix() {
+            if (_matrix == null) {
+                throw new UnsupportedOperationException("Matrix not initialised");
+            }
+
+            return _matrix;
+        }
+
+        public void initMatrix(Size frameSize, Size bitmapSize) {
+            if (_matrix == null) {
+                _matrix = composer.composeMatrix(frameSize, bitmapSize);
+                if (_matrix == null) {
+                    throw new AssertionError("Matrix composer returned null");
+                }
+            }
+        }
+    }
+
+    private static final SparseArray<Option> options = new SparseArray<>();
+    static {
+        options.put(Options.NORMAL, new Option(R.string.btnNormal, new Normal()));
+        options.put(Options.ZOOM_3X, new Option(R.string.btnZoomIn, new Zoom3x()));
+        options.put(Options.FLIP_HORIZONTAL, new Option(R.string.btnFlipHorizontal, new HorizontalFlip()));
+        options.put(Options.FLIP_VERTICAL, new Option(R.string.btnFlipVertical, new VerticalFlip()));
     }
 
     private Size getBitmapSize() {
@@ -38,32 +82,45 @@ public class MainActivity extends Activity implements View.OnClickListener {
         return new Size(_imageView.getWidth(), _imageView.getHeight());
     }
 
-    private void initMatrixes() {
-        if (_normalMatrix == null) {
-            final Size frameSize = getImageFrameSize();
-            final Size bitmapSize = getBitmapSize();
+    private void initMatrices() {
+        final int optionCount = options.size();
+        final Size frameSize = getImageFrameSize();
+        final Size bitmapSize = getBitmapSize();
 
-            final float fitXScale = ((float) frameSize.width) / bitmapSize.width;
-            final float fitYScale = ((float) frameSize.height) / bitmapSize.height;
-            final float fitScale = Math.min(fitXScale, fitYScale);
+        for (int i = 0; i < optionCount; i++) {
+            options.valueAt(i).initMatrix(frameSize, bitmapSize);
+        }
+    }
 
-            final float marginX = (frameSize.width - bitmapSize.width * fitScale) / 2;
-            final float marginY = (frameSize.height - bitmapSize.height * fitScale) / 2;
+    private class OptionAdapter extends BaseAdapter {
 
-            _normalMatrix = new Matrix();
-            _normalMatrix.setScale(fitScale, fitScale);
-            _normalMatrix.postTranslate(marginX, marginY);
+        @Override
+        public int getCount() {
+            return options.size();
+        }
 
-            _zoomInMatrix = new Matrix();
-            _zoomInMatrix.setScale(fitScale * 3.0f, fitScale * 3.0f);
+        @Override
+        public Option getItem(int position) {
+            return options.valueAt(position);
+        }
 
-            _horizontalMirrorMatrix = new Matrix();
-            _horizontalMirrorMatrix.setScale(-fitScale, fitScale);
-            _horizontalMirrorMatrix.postTranslate(marginX + bitmapSize.width * fitScale, marginY);
+        @Override
+        public long getItemId(int position) {
+            return options.keyAt(position);
+        }
 
-            _verticalMirrorMatrix = new Matrix();
-            _verticalMirrorMatrix.setScale(fitScale, -fitScale);
-            _verticalMirrorMatrix.postTranslate(marginX, marginY + bitmapSize.height * fitScale);
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            final TextView view;
+            if (convertView == null) {
+                view = (TextView) getLayoutInflater().inflate(R.layout.option_item, parent, false);
+            }
+            else {
+                view = (TextView) convertView;
+            }
+
+            view.setText(getItem(position).text);
+            return view;
         }
     }
 
@@ -73,33 +130,22 @@ public class MainActivity extends Activity implements View.OnClickListener {
         setContentView(R.layout.main_activity);
 
         _imageView = findViewById(R.id.imageView);
-        findViewById(R.id.btnNormal).setOnClickListener(this);
-        findViewById(R.id.btnZoomIn).setOnClickListener(this);
-        findViewById(R.id.btnHorizontalMirror).setOnClickListener(this);
-        findViewById(R.id.btnVerticalMirror).setOnClickListener(this);
+
+        final Spinner spinner = findViewById(R.id.spinner);
+        spinner.setAdapter(new OptionAdapter());
+        spinner.setOnItemSelectedListener(this);
     }
 
     @Override
-    public void onClick(View view) {
-        initMatrixes();
-        final Matrix matrix;
-        switch (view.getId()) {
-            case R.id.btnZoomIn:
-                matrix = _zoomInMatrix;
-                break;
+    public void onItemSelected(AdapterView<?> adapterView, View view, int position, long itemId) {
+        initMatrices();
 
-            case R.id.btnHorizontalMirror:
-                matrix = _horizontalMirrorMatrix;
-                break;
+        final OptionAdapter adapter = (OptionAdapter) adapterView.getAdapter();
+        _imageView.setImageMatrix(adapter.getItem(position).getMatrix());
+    }
 
-            case R.id.btnVerticalMirror:
-                matrix = _verticalMirrorMatrix;
-                break;
-
-            default:
-                matrix = _normalMatrix;
-        }
-
-        _imageView.setImageMatrix(matrix);
+    @Override
+    public void onNothingSelected(AdapterView<?> adapterView) {
+        // Nothing to be done
     }
 }

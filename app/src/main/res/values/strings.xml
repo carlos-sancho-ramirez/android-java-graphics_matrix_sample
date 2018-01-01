@@ -3,6 +3,6 @@
 
     <string name="btnNormal">Normal</string>
     <string name="btnZoomIn">Zoom In</string>
-    <string name="btnHorizontalMirror">H. Mirror</string>
-    <string name="btnVerticalMirror">V. Mirror</string>
+    <string name="btnFlipHorizontal">Horizontal Flip</string>
+    <string name="btnFlipVertical">Vertical Flip</string>
 </resources>
