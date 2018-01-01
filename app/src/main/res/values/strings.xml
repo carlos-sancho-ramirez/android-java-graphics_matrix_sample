@@ -5,4 +5,5 @@
     <string name="btnZoomIn">Zoom In</string>
     <string name="btnFlipHorizontal">Horizontal Flip</string>
     <string name="btnFlipVertical">Vertical Flip</string>
+    <string name="btnRotate20Deg">Rotate 20º</string>
 </resources>
