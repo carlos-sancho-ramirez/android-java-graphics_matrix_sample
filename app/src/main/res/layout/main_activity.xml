@@ -27,5 +27,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/btnZoomIn"/>
+
+        <Button
+            android:id="@+id/btnHorizontalMirror"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btnHorizontalMirror"/>
+
+        <Button
+            android:id="@+id/btnVerticalMirror"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btnVerticalMirror"/>
     </LinearLayout>
 </LinearLayout>

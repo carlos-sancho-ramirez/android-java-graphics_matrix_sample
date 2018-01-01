@@ -13,6 +13,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
     private Matrix _normalMatrix;
     private Matrix _zoomInMatrix;
+    private Matrix _horizontalMirrorMatrix;
+    private Matrix _verticalMirrorMatrix;
 
     private static final class Size {
         final int width;
@@ -54,6 +56,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
 
             _zoomInMatrix = new Matrix();
             _zoomInMatrix.setScale(fitScale * 3.0f, fitScale * 3.0f);
+
+            _horizontalMirrorMatrix = new Matrix();
+            _horizontalMirrorMatrix.setScale(-fitScale, fitScale);
+            _horizontalMirrorMatrix.postTranslate(marginX + bitmapSize.width * fitScale, marginY);
+
+            _verticalMirrorMatrix = new Matrix();
+            _verticalMirrorMatrix.setScale(fitScale, -fitScale);
+            _verticalMirrorMatrix.postTranslate(marginX, marginY + bitmapSize.height * fitScale);
         }
     }
 
@@ -65,6 +75,8 @@ public class MainActivity extends Activity implements View.OnClickListener {
         _imageView = findViewById(R.id.imageView);
         findViewById(R.id.btnNormal).setOnClickListener(this);
         findViewById(R.id.btnZoomIn).setOnClickListener(this);
+        findViewById(R.id.btnHorizontalMirror).setOnClickListener(this);
+        findViewById(R.id.btnVerticalMirror).setOnClickListener(this);
     }
 
     @Override
@@ -74,6 +86,14 @@ public class MainActivity extends Activity implements View.OnClickListener {
         switch (view.getId()) {
             case R.id.btnZoomIn:
                 matrix = _zoomInMatrix;
+                break;
+
+            case R.id.btnHorizontalMirror:
+                matrix = _horizontalMirrorMatrix;
+                break;
+
+            case R.id.btnVerticalMirror:
+                matrix = _verticalMirrorMatrix;
                 break;
 
             default:
