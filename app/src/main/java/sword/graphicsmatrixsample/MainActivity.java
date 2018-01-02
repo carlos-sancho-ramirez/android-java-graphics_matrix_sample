@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import sword.graphicsmatrixsample.matrix_composer.HorizontalFlip;
 import sword.graphicsmatrixsample.matrix_composer.Normal;
+import sword.graphicsmatrixsample.matrix_composer.Projection2D;
 import sword.graphicsmatrixsample.matrix_composer.Rotate20;
 import sword.graphicsmatrixsample.matrix_composer.VerticalFlip;
 import sword.graphicsmatrixsample.matrix_composer.Zoom3x;
@@ -27,6 +28,7 @@ public final class MainActivity extends Activity implements AdapterView.OnItemSe
         int FLIP_HORIZONTAL = 2;
         int FLIP_VERTICAL = 3;
         int ROTATE_20 = 4;
+        int PROJECTION_2D = 5;
     }
 
     private ImageView _imageView;
@@ -71,6 +73,7 @@ public final class MainActivity extends Activity implements AdapterView.OnItemSe
         options.put(Options.FLIP_HORIZONTAL, new Option(R.string.btnFlipHorizontal, new HorizontalFlip()));
         options.put(Options.FLIP_VERTICAL, new Option(R.string.btnFlipVertical, new VerticalFlip()));
         options.put(Options.ROTATE_20, new Option(R.string.btnRotate20Deg, new Rotate20()));
+        options.put(Options.PROJECTION_2D, new Option(R.string.btnProjection2D, new Projection2D()));
     }
 
     private Size getBitmapSize() {
